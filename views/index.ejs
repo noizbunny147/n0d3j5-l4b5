@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Danh sách sản phẩm</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container my-3">
+        <h4 class="text-primary">Danh sách sản phẩm</h4>
+        <a class="btn btn-success btn-sm my-2" href="/add">Thêm sản phẩm</a>
+        <p>Chọn một sản phẩm cụ thể để xem chi tiết</p>
+        <table class="table table-striped" id="productTable">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Giá</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% products.forEach((p,index)=> { %>
+                    <tr id="<%= p.id %>">
+                        <td>
+                            <%= index+1 %>
+                        </td>
+                        <td>
+                            <a href="/product/<%= p.id %>">
+                                <%= p.name %>
+                            </a>
+                        </td>
+
+                        <td>
+                            $ <%= p.price %>
+                        </td>
+                        <td>
+                            <a href="/edit/<%= p.id %>">Chỉnh sửa</a> |
+                            <a href="/delete/<%= p.id %>" class="btn-delete" data-id="<%= p.id %>"
+                                data-name="<%= p.name %>">Xóa</a>
+                        </td>
+                    </tr>
+                    <% }) %>
+
+                        <!-- <tr><td>100</td>
+                            <td><a href="/product/#">Iphone X</a></td>
+                            <td>$ 1000</td>
+                            <td>
+                                <a href="/edit/1000">Chỉnh sửa</a> |
+                                <a href="/delete/1000" class="btn-delete" data-id="<%= 1000 %>"
+                                    data-name="Iphone X">Xóa</a>
+                            </td>
+                        </tr> -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="confirmDelete">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="Mtitle">Xóa sản phẩm</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Có chắc chắn về việc xóa sản phẩm <strong id="product-name">XXXXX</strong> hay không?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Không</button>
+                    <button type="button" class="btn btn-primary btn-confirm-delete" data-id="XXX">Có</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('.btn-delete').click(e => {
+            e.preventDefault();
+            // console.log(e);
+
+            const id = $(e.target).data('id');
+            const name = $(e.target).data('name');
+
+            console.log(id, name);
+
+            $("#confirmDelete").modal('show');
+            $("#product-name").html(name);
+            $(".btn-confirm-delete").attr('data-id', id);
+        })
+
+        $(".btn-confirm-delete").click(e => {
+            e.preventDefault();
+            // console.log(e);
+            // const id = $(e.target).data('id'); //jquery got problem here
+            const id = e.target.dataset.id;
+            $("#confirmDelete").modal('hide');
+
+            console.log('Đã xóa sản phẩm có mã số ' + id);
+            deleteProduct(id);
+        })
+
+        function deleteProduct(id) {
+            fetch('http://localhost:8080/delete', {
+                method: 'POST', // Server đang hỗ trợ POST
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: 'id=' + id
+            })
+                .then(result => result.json())
+                .then(json => {
+                    if (json.code === 0) {
+                        // Execute sthing
+                        document.getElementById(id).remove();
+                    } else {
+                        console.log(json.message);
+                    }
+                })
+                .catch(e => console.log(e))
+        }
+    </script>
+
+</body>
+
+</html>
